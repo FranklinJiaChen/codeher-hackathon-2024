@@ -140,9 +140,9 @@ class Goal {
 
 
         if (progress <= onTrack) {
-            return `You are on budget! Keep it up.`;
+            return 'For section <b>' + this.section.sectionName + '</b>, you are on budget! Keep it up.'
         } else {
-            return `<span style="color:red"> You've exceeded your budget goal at this point in the semester. Consider adjusting your budget! </span>`;
+            return 'For section <b>' + this.section.sectionName + '</b>, <span style="color:red"> you\'ve exceeded your budget goal at this point in the semester. Consider adjusting your budget! </span>';
         }
     }
 }
@@ -206,9 +206,12 @@ document.addEventListener("DOMContentLoaded", () => {
                         }
                     }
                 }
+
             });
 
             document.getElementById("goalMsg").innerHTML = goal.getGoalMessage()
+
+            
         });
 
 
