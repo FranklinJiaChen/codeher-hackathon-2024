@@ -212,7 +212,7 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Test the Section class
-const rootSection = new Section("Root", "Fall 2024");
+const rootSection = new Section("Fall 2024", "Fall 2024");
 
 // Test adding expenses
 rootSection.addExpense(900, "2024-09-01", "Housing");
