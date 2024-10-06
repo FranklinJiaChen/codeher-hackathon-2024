@@ -153,10 +153,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const progressBar = new Chart(ctx, {
                 type: 'bar', // Use 'bar' for horizontal bars
                 data: {
-                    labels: ['Current Progress (' + currentSpent + ')', 'On Track (' + (onTrackPercentage * goal.budget / 100).toFixed(2) + ')'],
+                    labels: ['Current Progress (' + currentSpent.toFixed(2) + ')', 'On Track (' + (onTrackPercentage * goal.budget / 100).toFixed(2) + ')'],
                     datasets: [{
                         label: 'Progress Percentage',
-                        data: [currentPercentage, onTrackPercentage],
+                        data: [currentPercentage.toFixed(2), onTrackPercentage.toFixed(2)],
                         backgroundColor: ['#4caf50', '#2196F3'], // Green for current progress, Blue for on track
                     }]
                 },
