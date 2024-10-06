@@ -3,6 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css"> <!-- Optional: Link to a CSS file for styling -->
+
     <title>Expense Tracker</title>
     <style>
       body {
@@ -86,10 +88,21 @@
       .dropdown li:hover {
         background-color: #f0f0f0;
       }
+
+      
     </style>
   </head>
   <body>
-    <h1>Welcome, Ana</h1>
+    <h1>Welcome</h1>
+
+    <header>
+      <nav class="navbar">
+        <div class="menu">
+            <a href="goal.html">View Your Goals</a>
+          </div>
+      </nav>
+    </header>
+
     <div class="page">
       <div class="input-row">
         <div class="input-container">
@@ -115,8 +128,6 @@
     <script src="app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-
-
       const colors = [
         "#FF6384",
         "#36A2EB",
@@ -168,9 +179,8 @@
         return pieData;
       }
 
-      let pieData = generatePieChart(rootSection)
+      let pieData = generatePieChart(rootSection);
       const ctx = document.getElementById("expensesChart").getContext("2d");
-
 
       // Input Elements
       const categoryInput = document.getElementById("categoryInput");
@@ -353,8 +363,6 @@
 
       // Show dropdown when typing
       categoryInput.addEventListener("input", updateCategoryDropdown);
-
-
     </script>
   </body>
 </html>
