@@ -74,24 +74,37 @@ class Expense {
     }
 }
 
-// Example usage:
+// Need to refactor goal progress and such
+class Goal {
+    constructor(section, budget) {
+        this.section = section; // Parent Node (Section)
+        this.budget = budget; // Budget amount
+    }
 
-// Create the root section
-const rootSection = new Section("Root", "Fall 2024");
+    // Get the amount spent so far in the section
+    getSpentAmount() {
+        return this.section.totalCost;
+    }
 
-// Test adding expenses
-rootSection.addExpense(900, "2024-9-01", "Housing");
-rootSection.addExpense(900, "2024-10-01", "Housing");
-rootSection.addExpense(900, "2024-11-01", "Housing");
-rootSection.addExpense(900, "2024-12-01", "Housing");
+    // Calculate the on-track number
+    getOnTrackNumber() {
+        return this.budget - this.getSpentAmount(); // Positive number means under budget
+    }
 
-rootSection.addExpense(50, "2024-10-02", "Food/Restaurant");
-rootSection.addExpense(70, "2024-10-22", "Food/Restaurant");
-rootSection.addExpense(70, "2024-10-17", "Food/On Campus");
-rootSection.addExpense(20, "2024-10-03", "Food/Fast Food/Mcdonalds");
-rootSection.addExpense(20, "2024-10-23", "Food/Fast Food/Mcdonalds");
-rootSection.addExpense(20, "2024-11-13", "Food/Fast Food/Mcdonalds");
-rootSection.addExpense(20, "2024-12-03", "Food/Fast Food/Mcdonalds");
+    // Get the goal progress percentage
+    getGoalProgress() {
+        return ((this.getSpentAmount() / this.budget) * 100).toFixed(2); // Percentage spent
+    }
 
+    // Get an encouraging message based on goal progress
+    getGoalMessage() {
+        const progress = this.getGoalProgress();
+        const onTrack = this.getOnTrackNumber();
 
-rootSection.logStructure();
+        if (progress < 100) {
+            return `You're at ${progress}% of your goal. Keep it up! You have $${onTrack} left to stay on track.`;
+        } else {
+            return `You've exceeded your goal by $${Math.abs(onTrack)}. Consider adjusting your budget!`;
+        }
+    }
+}
