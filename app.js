@@ -34,6 +34,15 @@ class Section {
             currentSection = existingSection;
         }
         return currentSection;
+
+        
+    }
+
+    getData() {
+        return {
+            labels: [...this.slices.map(slice => slice.sectionName)],
+            data: [...this.slices.map(slice => slice.totalCost)]
+        };
     }
 
 
