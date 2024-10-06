@@ -115,7 +115,7 @@
     <script src="app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-      
+
 
       const colors = [
         "#FF6384",
@@ -171,17 +171,6 @@
       let pieData = generatePieChart(rootSection)
       const ctx = document.getElementById("expensesChart").getContext("2d");
 
-      let chart = new Chart(ctx, {
-        type: "pie",
-        data: pieData,
-        options: {
-          onClick: handleChartClick,
-          plugins: {
-            legend: { display: true }, 
-          },
-        },
-      });
-
 
       // Input Elements
       const categoryInput = document.getElementById("categoryInput");
@@ -191,6 +180,7 @@
       const chartContainer = document.querySelector(".container");
       const backButton = document.getElementById("backButton");
       const categoryDropdown = document.getElementById("categoryDropdown");
+      let curNode = rootSection;
 
       // Create main pie chart instance
       let expensesChart = new Chart(ctx, {
@@ -273,7 +263,10 @@
         if (activePoints.length > 0) {
           const index = activePoints[0].index;
           const category = pieData.labels[index];
-          showNestedChart(category);
+          curNode = curNode.findSection(category);
+          expensesChart.data = generatePieChart(curNode);
+          expensesChart.update();
+          backButton.style.display = "block"; // Show back button
         }
       }
 
@@ -294,39 +287,12 @@
         return subcategoryColors[index % subcategoryColors.length];
       }
 
-      // Show nested pie chart for clicked category
-      function showNestedChart(category) {
-        const nestedLabels = Object.keys(nestedData[category]);
-        const nestedValues = Object.values(nestedData[category]);
-        const nestedColors = nestedLabels.map((_, index) =>
-          getSubcategoryColor(index)
-        );
-
-        // Update pie chart with nested data
-        expensesChart.data.labels = nestedLabels;
-        expensesChart.data.datasets[0].data = nestedValues;
-        expensesChart.data.datasets[0].backgroundColor = nestedColors;
-        expensesChart.data.datasets[0].hoverBackgroundColor = nestedColors;
-        expensesChart.update();
-
-        backButton.style.display = "block"; // Show back button
-      }
-
       // Handle back button click to return to main chart
       backButton.addEventListener("click", () => {
-        expensesChart.data.labels = Object.keys(categoryData);
-        expensesChart.data.datasets[0].data = Object.values(categoryData).map(
-          (d) => d.total
-        );
-        expensesChart.data.datasets[0].backgroundColor = Object.values(
-          categoryData
-        ).map((d) => d.color);
-        expensesChart.data.datasets[0].hoverBackgroundColor = Object.values(
-          categoryData
-        ).map((d) => d.color);
+        curNode = curNode.parentNode;
+        expensesChart.data = generatePieChart(curNode);
         expensesChart.update();
-
-        backButton.style.display = "none"; // Hide back button
+        backButton.style.display = curNode.parentNode ? "block" : "none"; // Hide back button if at root
       });
 
       // Event Listener for button click

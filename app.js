@@ -35,7 +35,7 @@ class Section {
         }
         return currentSection;
 
-        
+
     }
 
     getData() {
