@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goals Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css"> <!-- Optional: Link to a CSS file for styling -->
+    <script src="app.js" defer></script> <!-- Link to your JavaScript file -->
+</head>
+<body>
+    <header>
+        <h1>Goals Tracker</h1>
+    </header>
+    <main>
+        <section id="goals-section">
+            <h2>Your Goals</h2>
+            <ul id="goals-list">
+                <!-- Goals will be dynamically added here -->
+            </ul>
+        </section>
+        <section id="add-goal-section">
+            <h2>Add a New Goal</h2>
+            <input type="text" id="budget-input" placeholder="Enter budget" />
+            <input type="text" id="section-input" placeholder="Enter section" />
+            <button id="add-goal-button">Add Goal</button>
+        </section>
+    </main>
+</body>
+</html>
