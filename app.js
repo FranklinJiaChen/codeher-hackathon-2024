@@ -127,11 +127,12 @@ class Goal {
         const progress = this.getGoalProgress();
         const onTrack = this.getOnTrackNumber();
 
-        // if (progress < 100) {
-        //     return `You're at ${progress}% of your goal. Keep it up! You have $${onTrack} left to stay on track.`;
-        // } else {
-        //     return `You've exceeded your goal by $${Math.abs(onTrack)}. Consider adjusting your budget!`;
-        // }
+
+        if (progress <= onTrack) {
+            return `You are on budget! Keep it up.`;
+        } else {
+            return `<span style="color:red"> You've exceeded your budget goal at this point in the semester. Consider adjusting your budget! </span>`;
+        }
     }
 }
 
@@ -195,7 +196,11 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                 }
             });
+
+            document.getElementById("goalMsg").innerHTML = goal.getGoalMessage()
         });
+
+        
     }
 
 

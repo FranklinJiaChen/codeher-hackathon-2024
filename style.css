@@ -1,0 +1,117 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+.input-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+input, button {
+    padding: 10px;
+    font-size: 16px;
+}
+#categoryInput, #titleInput {
+    flex: 1;
+}
+.container {
+    display: flex;
+    justify-content: center;
+    max-width: 800px;
+    margin-top: 20px;
+}
+#expensesChart {
+    max-width: 500px;
+}
+.legend {
+    margin-left: 50px;
+}
+#backButton {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: none;
+    background-color: #ff6666;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+h1 {
+    text-align: center;
+}
+.invalid {
+    border-color: red;
+}
+.page {
+
+    width: 100%
+}
+
+.input-container {
+    position: relative;
+    width: 60%;
+    margin: auto;
+}
+
+.dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: white;
+    border: 1px solid #ccc;
+    max-height: 150px; /* Limit height */
+    overflow-y: auto;
+    display: none; /* Hidden by default */
+    z-index: 100;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.dropdown li {
+    padding: 8px;
+    cursor: pointer;
+}
+
+.dropdown li:hover {
+    background-color: #f0f0f0;
+}
+body {
+    font-family: Arial, sans-serif;
+}
+.input-container {
+    margin-bottom: 10px;
+}
+.nested-input {
+    margin-left: 20px;
+}
+canvas {
+    display: block;
+    margin: 20px auto;
+}
+#legendContainer {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+.error {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 10px;
+}
+
+body {
+    font-family: Arial, sans-serif; /* Set a default font */
+    margin: 0; /* Remove default margin */
+    padding: 0; /* Remove default padding */
+}
+
+.navbar {
+    overflow: hidden; /* Clear floats */
+    display: flex;
+    justify-content: center;
+}
+
+
