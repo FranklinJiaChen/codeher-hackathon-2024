@@ -3,181 +3,367 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nesting Pie Charts</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Expense Tracker</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 20px;
         }
-        .input-container {
-            margin-bottom: 10px;
+        .input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
         }
-        .nested-input {
-            margin-left: 20px;
+        input, button {
+            padding: 10px;
+            font-size: 16px;
         }
-        canvas {
-            display: block;
-            margin: 20px auto;
+        #categoryInput, #titleInput {
+            flex: 1;
         }
-        #legendContainer {
+        .container {
             display: flex;
             justify-content: center;
+            max-width: 800px;
             margin-top: 20px;
+        }
+        #expensesChart {
+            max-width: 500px;
+        }
+        .legend {
+            margin-left: 50px;
+        }
+        #backButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: none;
+            background-color: #ff6666;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        h1 {
+            text-align: center;
+        }
+        .invalid {
+            border-color: red;
+        }
+        .page {
+
+            width: 100%
+        }
+
+        .input-container {
+            position: relative;
+            width: 60%;
+            margin: auto;
+        }
+
+        .dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background-color: white;
+            border: 1px solid #ccc;
+            max-height: 150px; /* Limit height */
+            overflow-y: auto;
+            display: none; /* Hidden by default */
+            z-index: 100;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .dropdown li {
+            padding: 8px;
+            cursor: pointer;
+        }
+
+        .dropdown li:hover {
+            background-color: #f0f0f0;
         }
     </style>
 </head>
 <body>
-    <h1>Expense Tracker with Nested Subcategories</h1>
-    <div id="inputArea">
+    <h1>Welcome, Ana</h1>
+    <div class="page">
+
+    <div class="input-row">
         <div class="input-container">
-            <input type="text" class="categoryInput" placeholder="Category" />
-            <button class="addButton">+</button>
+            <input type="text" id="categoryInput" placeholder="Enter category..." />
+            <button id="submitCategoryBtn">Add Category</button>
+            <ul id="categoryDropdown" class="dropdown"></ul>
         </div>
+        <div class="input-container">
+            <input type="text" id="titleInput" placeholder="Enter title..." />
+            <button id="submitTitleBtn">Add Title</button>
+            <ul id="titleDropdown" class="dropdown"></ul>
+        </div>
+
+        <input id="amountInput" type="number" placeholder="Enter amount">
+        <button id="submitButton">Add Expense</button>
     </div>
-    <input type="number" id="amountInput" placeholder="Amount" />
-    <button id="submitButton">Submit</button>
-    
-    <canvas id="mainPieChart" width="400" height="400"></canvas>
-    <div id="legendContainer"></div>
 
+    <div class="container">
+        <button id="backButton">Back</button>
+        <canvas id="expensesChart"></canvas>
+       
+    </div>
+</div>
+
+<script src="app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const inputArea = document.getElementById('inputArea');
+        const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+        let colorIndex = 0;
+        const categoryData = {};
+        const nestedData = {}; // Store breakdowns for each category
+        let previousCategories = [];
+        let previousTitles = [];
+        const usedCategories = new Set();
+        const usedTitles = new Set();
+        const pieData = {
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: [],
+                hoverBackgroundColor: []
+            }]
+        };
+
+        // Input Elements
+        const categoryInput = document.getElementById('categoryInput');
+        const titleInput = document.getElementById('titleInput');
         const amountInput = document.getElementById('amountInput');
-        const submitButton = document.getElementById('submitButton');
-        const mainPieChartCanvas = document.getElementById('mainPieChart');
-        const legendContainer = document.getElementById('legendContainer');
-        
-        let mainCategories = {};
-        let mainPieChart;
+        const submitCategoryBtn = document.getElementById('submitCategoryBtn');
+        const submitTitleBtn = document.getElementById('submitTitleBtn');
+        const submitExpenseBtn = document.getElementById('submitExpenseBtn');
+        const chartContainer = document.querySelector('.container');
+        const ctx = document.getElementById('expensesChart').getContext('2d');
+        const backButton = document.getElementById('backButton');
+        const categoryDropdown = document.getElementById('categoryDropdown');
+        const titleDropdown = document.getElementById('titleDropdown');
 
-        function updateMainPieChart() {
-            const data = {
-                labels: Object.keys(mainCategories),
-                datasets: [{
-                    label: 'Expenses',
-                    data: Object.values(mainCategories).map(cat => cat.total),
-                    backgroundColor: Object.values(mainCategories).map(cat => cat.color),
-                }]
-            };
+        // Create main pie chart instance
+        let expensesChart = new Chart(ctx, {
+            type: 'pie',
+            data: pieData,
+            options: {
+                onClick: handleChartClick,
+                plugins: {
+                    legend: { display: true } // Hide Chart.js legend (we'll generate a custom one)
+                }
+            }
+        });
 
-            if (mainPieChart) {
-                mainPieChart.data = data;
-                mainPieChart.update();
+        // Function to add category to datalist
+        function addCategoryToDatalist(category) {
+            const option = document.createElement('option');
+            option.value = category;
+            document.getElementById('categoryList').appendChild(option);
+        }
+
+        // Function to add title to datalist
+        function addTitleToDatalist(title) {
+            const option = document.createElement('option');
+            option.value = title;
+            document.getElementById('titleList').appendChild(option);
+        }
+
+        // Validate inputs
+        function validateInputs() {
+            let isValid = true;
+
+            if (categoryInput.value === '') {
+                categoryInput.classList.add('invalid');
+                isValid = false;
             } else {
-                mainPieChart = new Chart(mainPieChartCanvas, {
-                    type: 'pie',
-                    data: data,
-                    options: {
-                        onClick: (evt) => {
-                            const activePoints = mainPieChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, false);
-                            if (activePoints.length) {
-                                const chartIndex = activePoints[0].index;
-                                const category = data.labels[chartIndex];
-                                renderSubChart(category);
-                            }
-                        }
-                    }
-                });
+                categoryInput.classList.remove('invalid');
             }
 
-            // Render the legend
-            renderLegend(data);
-        }
-
-        function renderLegend(data) {
-            legendContainer.innerHTML = '';
-            data.labels.forEach((label, index) => {
-                const legendItem = document.createElement('div');
-                legendItem.style.color = data.datasets[0].backgroundColor[index];
-                legendItem.textContent = `${label}: ${data.datasets[0].data[index]}`;
-                legendContainer.appendChild(legendItem);
-            });
-        }
-
-        function addSubCategoryInput(parentElement) {
-            const subInputContainer = document.createElement('div');
-            subInputContainer.className = 'nested-input';
-
-            const subcategoryInput = document.createElement('input');
-            subcategoryInput.type = 'text';
-            subcategoryInput.placeholder = 'Subcategory';
-
-            const subButton = document.createElement('button');
-            subButton.innerText = '+';
-
-            subInputContainer.appendChild(subcategoryInput);
-            subInputContainer.appendChild(subButton);
-            parentElement.appendChild(subInputContainer);
-
-            subButton.addEventListener('click', () => addSubCategoryInput(subInputContainer));
-        }
-
-        inputArea.addEventListener('click', (event) => {
-            if (event.target.classList.contains('addButton')) {
-                addSubCategoryInput(event.target.parentElement);
+            if (!amountInput.value || amountInput.value <= 0) {
+                amountInput.classList.add('invalid');
+                isValid = false;
+            } else {
+                amountInput.classList.remove('invalid');
             }
+
+            return isValid;
+        }
+
+        // Add an expense to the pie chart
+        function addExpense(category, title, amount) {
+            if (!categoryData[category]) {
+                const assignedColor = colors[colorIndex % colors.length];
+                categoryData[category] = { total: 0, color: assignedColor };
+                nestedData[category] = {}; // Initialize nested data
+                colorIndex++;
+
+                // Add new category to the pie chart
+                pieData.labels.push(category);
+                pieData.datasets[0].backgroundColor.push(assignedColor);
+                pieData.datasets[0].hoverBackgroundColor.push(assignedColor);
+                pieData.datasets[0].data.push(0); // Initialize data for the new category
+            }
+
+            // Update category total and nested breakdown
+            categoryData[category].total += parseFloat(amount);
+            if (!nestedData[category][title]) {
+                nestedData[category][title] = 0;
+            }
+            nestedData[category][title] += parseFloat(amount);
+
+            // Update chart data and display chart
+            const categoryIndex = pieData.labels.indexOf(category);
+            pieData.datasets[0].data[categoryIndex] = categoryData[category].total;
+            chartContainer.style.display = 'flex';
+            
+            expensesChart.update();
+        }
+
+        // Handle chart click event for showing nested breakdowns
+        function handleChartClick(evt) {
+            const activePoints = expensesChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, true);
+            if (activePoints.length > 0) {
+                const index = activePoints[0].index;
+                const category = pieData.labels[index];
+                showNestedChart(category);
+            }
+        }
+
+        // Unique color assignment for subcategories
+        function getSubcategoryColor(index) {
+            const subcategoryColors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#FFB3E6', '#FFC0CB', '#FFD700', '#ADFF2F'];
+            return subcategoryColors[index % subcategoryColors.length];
+        }
+
+// Show nested pie chart for clicked category
+function showNestedChart(category) {
+            const nestedLabels = Object.keys(nestedData[category]);
+            const nestedValues = Object.values(nestedData[category]);
+            const nestedColors = nestedLabels.map((_, index) => getSubcategoryColor(index));
+
+            // Update pie chart with nested data
+            expensesChart.data.labels = nestedLabels;
+            expensesChart.data.datasets[0].data = nestedValues;
+            expensesChart.data.datasets[0].backgroundColor = nestedColors;
+            expensesChart.data.datasets[0].hoverBackgroundColor = nestedColors;
+            expensesChart.update();
+
+            backButton.style.display = 'block'; // Show back button
+        }
+
+
+        // Handle back button click to return to main chart
+        backButton.addEventListener('click', () => {
+            expensesChart.data.labels = Object.keys(categoryData);
+            expensesChart.data.datasets[0].data = Object.values(categoryData).map(d => d.total);
+            expensesChart.data.datasets[0].backgroundColor = Object.values(categoryData).map(d => d.color);
+            expensesChart.data.datasets[0].hoverBackgroundColor = Object.values(categoryData).map(d => d.color);
+            expensesChart.update();
+
+            backButton.style.display = 'none'; // Hide back button
         });
 
+        // Event Listener for button click
         submitButton.addEventListener('click', () => {
-            const categoryInputs = Array.from(document.querySelectorAll('.categoryInput'));
-            const amount = parseFloat(amountInput.value);
+            const category = categoryInput.value.trim();
+            const title = titleInput.value.trim();
+            const amount = amountInput.value;
 
-            categoryInputs.forEach(input => {
-                const category = input.value.trim();
-                if (category) {
-                    if (!mainCategories[category]) {
-                        mainCategories[category] = { total: 0, color: `hsl(${Math.random() * 360}, 100%, 70%)`, subcategories: {} };
-                    }
-                    mainCategories[category].total += amount;
+            if (validateInputs()) {
+                const path = category + "/" + title;
+                const date = "2024-10-06"
+                addExpense(category, title, amount);
 
-                    const subCategoryInputs = Array.from(input.parentElement.querySelectorAll('.nested-input input'));
-                    subCategoryInputs.forEach(subInput => {
-                        const subcategory = subInput.value.trim();
-                        if (subcategory) {
-                            if (!mainCategories[category].subcategories[subcategory]) {
-                                mainCategories[category].subcategories[subcategory] = { total: 0, color: `hsl(${Math.random() * 360}, 100%, 70%)` };
-                            }
-                            mainCategories[category].subcategories[subcategory].total += amount;
-                        }
-                    });
+                // Add new category or title to datalists if they don't already exist
+                if (!usedCategories.has(category)) {
+                    usedCategories.add(category);
+                    addCategoryToDatalist(category);
                 }
-            });
+                if (!usedTitles.has(title)) {
+                    usedTitles.add(title);
+                    addTitleToDatalist(title);
+                }
 
-            amountInput.value = '';
-            updateMainPieChart();
+                // Clear inputs after submission
+                titleInput.value = '';
+                amountInput.value = '';
+            }
         });
 
-        function renderSubChart(category) {
-            const subCategories = mainCategories[category].subcategories;
+        // Event listener for category submission
+        submitCategoryBtn.addEventListener('click', () => {
+            const value = categoryInput.value.trim();
+            if (value && !previousCategories.includes(value)) {
+                previousCategories.push(value);
+                updateCategoryDropdown();
+            }
+            categoryInput.value = ''; // Clear input after submitting
+        });
 
-            const subChartData = {
-                labels: Object.keys(subCategories),
-                datasets: [{
-                    label: `${category} Expenses`,
-                    data: Object.values(subCategories).map(sub => sub.total),
-                    backgroundColor: Object.values(subCategories).map(sub => sub.color),
-                }]
-            };
+        // Event listener for title submission
+        submitTitleBtn.addEventListener('click', () => {
+            const value = titleInput.value.trim();
+            if (value && !previousTitles.includes(value)) {
+                previousTitles.push(value);
+                updateTitleDropdown();
+            }
+            titleInput.value = ''; // Clear input after submitting
+        });
 
-            // Clear the existing pie chart and re-render
-            mainPieChart.destroy();
-            mainPieChart = new Chart(mainPieChartCanvas.getContext('2d'), {
-                type: 'pie',
-                data: subChartData,
-                options: {
-                    onClick: (evt) => {
-                        const activePoints = mainPieChart.getElementsAtEventForMode(evt, 'nearest', { intersect: true }, false);
-                        if (activePoints.length) {
-                            const chartIndex = activePoints[0].index;
-                            const subcategory = subChartData.labels[chartIndex];
-                            // Here you can further nest subcategories if desired
-                        }
-                    }
-                }
+        // Update category dropdown
+        function updateCategoryDropdown() {
+            categoryDropdown.innerHTML = '';
+            previousCategories.forEach(entry => {
+                const listItem = document.createElement('li');
+                listItem.textContent = entry;
+                listItem.addEventListener('click', () => {
+                    categoryInput.value = entry; // Fill input with clicked entry
+                    categoryDropdown.style.display = 'none'; // Hide dropdown
+                });
+                categoryDropdown.appendChild(listItem);
             });
-
-            renderLegend(subChartData);
+            categoryDropdown.style.display = previousCategories.length ? 'block' : 'none'; // Show dropdown if there are entries
         }
+
+        // Update title dropdown
+        function updateTitleDropdown() {
+            titleDropdown.innerHTML = '';
+            previousTitles.forEach(entry => {
+                const listItem = document.createElement('li');
+                listItem.textContent = entry;
+                listItem.addEventListener('click', () => {
+                    titleInput.value = entry; // Fill input with clicked entry
+                    titleDropdown.style.display = 'none'; // Hide dropdown
+                });
+                titleDropdown.appendChild(listItem);
+            });
+            titleDropdown.style.display = previousTitles.length ? 'block' : 'none'; // Show dropdown if there are entries
+        }
+
+        // Hide dropdowns if input is focused out
+        categoryInput.addEventListener('focusout', () => {
+            setTimeout(() => {
+                categoryDropdown.style.display = 'none';
+            }, 100);
+        });
+
+        titleInput.addEventListener('focusout', () => {
+            setTimeout(() => {
+                titleDropdown.style.display = 'none';
+            }, 100);
+        });
+
+        // Show dropdown when typing
+        categoryInput.addEventListener('input', updateCategoryDropdown);
+        titleInput.addEventListener('input', updateTitleDropdown);
+
+        // Initialize the chart on page load
+        initializeChart();
     </script>
 </body>
 </html>
