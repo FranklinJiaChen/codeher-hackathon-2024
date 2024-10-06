@@ -88,8 +88,11 @@
       .dropdown li:hover {
         background-color: #f0f0f0;
       }
+      #submitCategoryBtn {
+        display: none;
+      }
 
-      
+
     </style>
   </head>
   <body>
@@ -281,9 +284,12 @@
         const amount = amountInput.value;
 
         if (validateInputs()) {
-          const path = category;
+          let path = category;
           const date = getCurrentDate();
-          rootSection.addExpense(parseInt(amount), date, categoryPaths[category]);
+          if (category in categoryPaths) {
+            path = categoryPaths[category];
+          }
+          rootSection.addExpense(parseInt(amount), date, path);
           expensesChart.data = generatePieChart(rootSection);
           expensesChart.update();
 

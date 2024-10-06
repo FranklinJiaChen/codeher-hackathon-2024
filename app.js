@@ -14,7 +14,14 @@ class Section {
 
     findSection(sectionPath) {
         console.log(sectionPath)
-        const pathArray = sectionPath.split("/"); // Split path by "/"
+        let pathArray;
+        if (sectionPath.includes('/')) {
+            pathArray = sectionPath.split("/"); // Split path by "/"
+        }
+        else {
+            pathArray = [sectionPath];
+        }
+
         let currentSection = this;
 
         // Traverse or create sections based on the path
@@ -204,7 +211,7 @@ document.addEventListener("DOMContentLoaded", () => {
             document.getElementById("goalMsg").innerHTML = goal.getGoalMessage()
         });
 
-        
+
     }
 
 
