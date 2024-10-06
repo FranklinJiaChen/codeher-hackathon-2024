@@ -13,6 +13,7 @@ class Section {
     }
 
     findSection(sectionPath) {
+        console.log(sectionPath)
         const pathArray = sectionPath.split("/"); // Split path by "/"
         let currentSection = this;
 
@@ -87,6 +88,9 @@ class Expense {
         this.cost = cost;
         this.date = date;
         this.parentNode = parentNode;
+
+        this.totalCost = cost;
+        this.sectionName = date;
     }
 }
 
@@ -236,16 +240,18 @@ rootSection.addExpense(20, "2024-10-03", "Food/Fast Food/Mcdonalds");
 rootSection.addExpense(20, "2024-10-23", "Food/Fast Food/Mcdonalds");
 rootSection.addExpense(20, "2024-11-13", "Food/Fast Food/Mcdonalds");
 rootSection.addExpense(20, "2024-12-03", "Food/Fast Food/Mcdonalds");
+rootSection.addExpense(20, "2024-12-23", "Food/Fast Food/Popeyes");
 
 rootSection.logStructure();
 
-const categoryPaths = {
+let categoryPaths = {
     "Housing": "Housing",
     "Food": "Food",
     "Restaurant": "Food/Restaurant",
     "On Campus": "Food/On Campus",
     "Fast Food": "Food/Fast Food",
-    "Mcdonalds": "Food/Fast Food/Mcdonalds"
+    "Mcdonalds": "Food/Fast Food/Mcdonalds",
+    "Popeyes": "Food/Fast Food/Popeyes"
 };
 
 getCurrentDate = () => {
@@ -255,6 +261,21 @@ getCurrentDate = () => {
     const day = String(currentDate.getDate()).padStart(2, '0');
 
     return `${year}-${month}-${day}`;
+}
+
+add_to_category_paths = (categoryPaths, input_text) => {
+    // if (input_text.find('/')) {
+    if (input_text.includes('/')) {
+        categoryPaths[input_text] = input_text;
+    } else {
+        const parts = input_text.split('/');
+        const result = [parts.pop(), parts.join('/')];
+
+        if (!(result[1] in categoryPaths)) {
+            categoryPaths[result[1]] = result[1] + '/' + result[0];
+        }
+    }
+    return categoryPaths;
 }
 
 

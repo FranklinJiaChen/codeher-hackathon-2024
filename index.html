@@ -128,8 +128,6 @@
       let colorIndex = 0;
       const categoryData = {};
       const nestedData = {}; // Store breakdowns for each category
-      let previousCategories = Object.keys(categoryPaths);
-      const usedCategories = new Set();
 
       function generatePieChart(section) {
         const chartData = section.getData();
@@ -222,36 +220,6 @@
         return isValid;
       }
 
-      // Add an expense to the pie chart
-      function addExpense(category, title, amount) {
-        if (!categoryData[category]) {
-          const assignedColor = colors[colorIndex % colors.length];
-          categoryData[category] = { total: 0, color: assignedColor };
-          nestedData[category] = {}; // Initialize nested data
-          colorIndex++;
-
-          // Add new category to the pie chart
-          pieData.labels.push(category);
-          pieData.datasets[0].backgroundColor.push(assignedColor);
-          pieData.datasets[0].hoverBackgroundColor.push(assignedColor);
-          pieData.datasets[0].data.push(0); // Initialize data for the new category
-        }
-
-        // Update category total and nested breakdown
-        categoryData[category].total += parseFloat(amount);
-        if (!nestedData[category][title]) {
-          nestedData[category][title] = 0;
-        }
-        nestedData[category][title] += parseFloat(amount);
-
-        // Update chart data and display chart
-        const categoryIndex = pieData.labels.indexOf(category);
-        pieData.datasets[0].data[categoryIndex] = categoryData[category].total;
-        chartContainer.style.display = "flex";
-
-        expensesChart.update();
-      }
-
       // Handle chart click event for showing nested breakdowns
       function handleChartClick(evt) {
         const activePoints = expensesChart.getElementsAtEventForMode(
@@ -260,9 +228,11 @@
           { intersect: true },
           true
         );
+        let pieData = generatePieChart(curNode);
         if (activePoints.length > 0) {
           const index = activePoints[0].index;
           const category = pieData.labels[index];
+          console.log(category);
           curNode = curNode.findSection(category);
           expensesChart.data = generatePieChart(curNode);
           expensesChart.update();
@@ -298,18 +268,17 @@
       // Event Listener for button click
       submitButton.addEventListener("click", () => {
         const category = categoryInput.value.trim();
-        const title = titleInput.value.trim();
         const amount = amountInput.value;
 
         if (validateInputs()) {
-          const path = category + "/" + title;
-          const date = "2024-10-06";
-          addExpense(category, title, amount);
+          const path = category;
+          const date = getCurrentDate();
+          rootSection.addExpense(parseInt(amount), date, categoryPaths[category]);
+          expensesChart.data = generatePieChart(rootSection);
+          expensesChart.update();
 
-          // Add new category or title to datalists if they don't already exist
-          if (!usedCategories.has(category)) {
-            usedCategories.add(category);
-            addCategoryToDatalist(category);
+          if (!categoryPaths[category]) {
+            categoryPaths[category] = [];
           }
 
           // Clear inputs after submission
@@ -319,18 +288,20 @@
 
       // Event listener for category submission
       submitCategoryBtn.addEventListener("click", () => {
-        const value = categoryInput.value.trim();
-        if (value && !previousCategories.includes(value)) {
-          previousCategories.push(value);
-          updateCategoryDropdown();
-        }
+        // const value = categoryInput.value.trim();
+        // if (value && !previousCategories.includes(value)) {
+        //   previousCategories.push(value);
+        //   updateCategoryDropdown();
+        // }
+        categoryPaths = add_to_category_paths(categoryPaths, categoryInput.value);
+
         categoryInput.value = ""; // Clear input after submitting
       });
 
       // Update category dropdown
       function updateCategoryDropdown() {
         categoryDropdown.innerHTML = "";
-        previousCategories.forEach((entry) => {
+        Object.keys(categoryPaths).forEach((entry) => {
           const listItem = document.createElement("li");
           listItem.textContent = entry;
           listItem.addEventListener("click", () => {
@@ -339,7 +310,7 @@
           });
           categoryDropdown.appendChild(listItem);
         });
-        categoryDropdown.style.display = previousCategories.length
+        categoryDropdown.style.display = Object.keys(categoryPaths).length
           ? "block"
           : "none"; // Show dropdown if there are entries
       }
