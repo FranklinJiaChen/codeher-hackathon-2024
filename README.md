@@ -1,6 +1,6 @@
 # CodeHer Hackathon
 
-This project was made for WECS' CodeHer+ Hack-a-thon by [Franklin](https://github.com/FranklinJiaChen) and [Ana](https://github.com/fluffyponyy).
+This project was made for WECS' CodeHer+ Hackathon by [Franklin](https://github.com/FranklinJiaChen) and [Ana](https://github.com/fluffyponyy).
 
 The hackathon took place at Sunday, October 6th, 2024.
 
